@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 namespace AdventOfCode2023
 {
     public class AdventOfCode2023Test
@@ -81,6 +83,48 @@ namespace AdventOfCode2023
             }
 
             return (char)0;
+        }
+
+        [Theory]
+        [InlineData("./input/day2test.txt", 8)]
+        [InlineData("./input/day2.txt", 2727)]
+        public void Day2Part1(string input, int expected)
+        {
+            var colours = new Dictionary<string, int>()
+            {
+                { "red", 12 },
+                { "green", 13},
+                { "blue", 14 }
+            };
+
+            string[] lines = File.ReadAllLines(input);
+
+            Regex rgx = new Regex("(?<number>[0-9]{2}) (?<colour>[a-z]*)");
+
+            List<int> PossibleGames = new List<int>();
+
+            foreach(var line in lines)
+            {
+                bool Possible = true ;
+                foreach(Match match in rgx.Matches(line))
+                {
+                    if (int.Parse(match.Groups["number"].Value) > colours[match.Groups["colour"].Value] )
+                    {
+                        Possible = false ;
+                        break;
+                    }
+                }
+
+                if (Possible)
+                {
+                    int GameNumber = int.Parse(line.Substring("Game ".Length, line.IndexOf(':') - "Game ".Length));
+                    PossibleGames.Add(GameNumber);
+                }
+            }
+
+            int result = PossibleGames.Sum();
+
+            Assert.Equal(expected, result);            
         }
 
     }
