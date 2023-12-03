@@ -127,5 +127,42 @@ namespace AdventOfCode2023
             Assert.Equal(expected, result);            
         }
 
+        [Theory]
+        [InlineData("./input/day2test.txt", 2286)]
+        [InlineData("./input/day2.txt", 56580)]
+        public void Day2Part2(string input, int expected)
+        {
+            string[] lines = File.ReadAllLines(input);
+
+            Regex rgx = new Regex("(?<number>[0-9]+) (?<colour>[a-z]*)");
+
+            int result = 0;
+
+            foreach (var line in lines)
+            {
+                var colours = new Dictionary<string, int>()
+                {
+                    { "red", 0 },
+                    { "green", 0},
+                    { "blue", 0 }
+                };
+
+                foreach (Match match in rgx.Matches(line))
+                {
+                    int value = int.Parse(match.Groups["number"].Value);
+                    string colour = match.Groups["colour"].Value;
+
+                    if (value > colours[colour])
+                    {
+                        colours[colour] = value;
+                    }
+                }
+
+                result += colours["red"] * colours["green"] * colours["blue"];
+            }
+
+            Assert.Equal(expected, result);
+        }
+
     }
 }
