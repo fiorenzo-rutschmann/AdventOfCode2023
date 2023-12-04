@@ -299,5 +299,126 @@ namespace AdventOfCode2023
             return character >= '0' && character <= '9';
         }
 
+        [Theory]
+        [InlineData("./input/day3test.txt", 467835)]
+        [InlineData("./input/day3.txt", 84883664)]
+        public void Day3Part2(string input, int expected)
+        {
+            string[] lines = File.ReadAllLines(input);
+
+            int result = 0;
+            
+            for (int index = 0; index < lines.Length; index++)
+            {
+                string line = lines[index];
+                for (int position = 0; position < line.Length; position++)
+                {
+                    //check for candidate
+                    if (line[position] == '*')
+                    {
+                        _log.WriteLine($"* {index}:{position}");
+
+                        List<int> numbers = new List<int>();
+
+                        //line above
+                        if (HasNumber(lines, index-1, position-1) || HasNumber(lines, index-1, position) || HasNumber(lines, index-1, position+1))
+                        {
+                            if (HasNumber(lines, index - 1, position - 1))
+                            {
+                                numbers.Add(GetLineNumber(lines, index - 1, position - 1));
+                            }
+                            if (HasNumber(lines, index - 1, position))
+                            {
+                                numbers.Add(GetLineNumber(lines, index - 1, position));
+                            }
+                            if (HasNumber(lines, index - 1, position + 1))
+                            {
+                                numbers.Add(GetLineNumber(lines, index - 1, position + 1));
+                            }
+                        }
+
+                        //currentline
+                        if (HasNumber(lines, index, position - 1) || HasNumber(lines, index, position+1))
+                        {
+                            if (HasNumber(lines, index, position - 1))
+                            {
+                                numbers.Add(GetLineNumber(lines, index, position - 1));
+                            }
+                            if (HasNumber(lines, index, position + 1))
+                            {
+                                numbers.Add(GetLineNumber(lines, index, position + 1));
+                            }
+                        }
+
+                        //line below
+                        if (HasNumber(lines, index + 1, position - 1) || HasNumber(lines, index + 1, position) || HasNumber(lines, index + 1, position + 1))
+                        {
+                            if (HasNumber(lines, index + 1, position - 1))
+                            {
+                                numbers.Add(GetLineNumber(lines, index + 1, position - 1));
+                            }
+                            if (HasNumber(lines, index + 1, position))
+                            {
+                                numbers.Add(GetLineNumber(lines, index + 1, position));
+                            }
+                            if (HasNumber(lines, index + 1, position + 1))
+                            {
+                                numbers.Add(GetLineNumber(lines, index + 1, position + 1));
+                            }
+                        }
+
+
+                        if (numbers.Distinct().Count() == 2)
+                        {
+                            var x = numbers.Distinct().ToArray();
+
+                            result += x[0] * x[1];
+                        }
+
+                    }
+                }
+            }
+
+            Assert.Equal(expected, result);
+        }
+
+        private bool HasNumber(string[] lines, int index, int position)
+        {
+            if (index >= 0 && position >= 0 && index < lines.Length && position < lines[0].Length)
+            {
+                var ret = Char.IsDigit(lines[index][position]) && lines[index][position] != '.';
+                return ret;
+            }
+
+            return false;
+        }
+
+        private int GetLineNumber(string[] lines, int index, int position)
+        {
+            string line = lines[index];
+
+            //start from known number position
+            int middle = position;
+
+            int left = position;
+            int right = position;
+
+            while (left > 0 && char.IsDigit(line[left-1]))
+            {
+                left--;
+            }
+
+            while (right < line.Length-1 && char.IsDigit(line[right+1]))
+            {
+                right++;
+            }
+
+            int result = int.Parse(line[left..(right+1)]);
+
+            _log.WriteLine($" {result} ");
+            return result;
+        }
+
+
     }
 }
