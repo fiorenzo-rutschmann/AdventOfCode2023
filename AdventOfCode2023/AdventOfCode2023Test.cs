@@ -29,14 +29,14 @@ namespace AdventOfCode2023
             string[] lines = File.ReadAllLines(input);
 
             int result = 0;
-            
-            foreach(string line in lines)
+
+            foreach (string line in lines)
             {
                 char[] values = new char[2] { (char)0, (char)0 };
 
                 ReadOnlySpan<char> span = line.AsSpan();
 
-                for(int i = 0; i < span.Length; i++)
+                for (int i = 0; i < span.Length; i++)
                 {
                     char value = Day1Part1GetValue(span.Slice(i));
 
@@ -112,14 +112,14 @@ namespace AdventOfCode2023
 
             List<int> PossibleGames = new List<int>();
 
-            foreach(var line in lines)
+            foreach (var line in lines)
             {
-                bool Possible = true ;
-                foreach(Match match in rgx.Matches(line))
+                bool Possible = true;
+                foreach (Match match in rgx.Matches(line))
                 {
-                    if (int.Parse(match.Groups["number"].Value) > colours[match.Groups["colour"].Value] )
+                    if (int.Parse(match.Groups["number"].Value) > colours[match.Groups["colour"].Value])
                     {
-                        Possible = false ;
+                        Possible = false;
                         break;
                     }
                 }
@@ -133,7 +133,7 @@ namespace AdventOfCode2023
 
             int result = PossibleGames.Sum();
 
-            Assert.Equal(expected, result);            
+            Assert.Equal(expected, result);
         }
 
         [Theory]
@@ -185,7 +185,7 @@ namespace AdventOfCode2023
 
             int NoParts = 0;
             int NoNotParts = 0;
-            
+
             foreach (var line in lines)
             {
                 lineIndex++;
@@ -218,7 +218,7 @@ namespace AdventOfCode2023
                             NoParts++;
 
                         }
-                        else if(startPosition > -1)
+                        else if (startPosition > -1)
                         {
                             NoNotParts++;
                         }
@@ -232,7 +232,7 @@ namespace AdventOfCode2023
                 //if number reaches the end of the line
                 if (startPosition > -1 && isPart)
                 {
-                    var number = int.Parse(line.Substring(startPosition, index+1 - startPosition));
+                    var number = int.Parse(line.Substring(startPosition, index + 1 - startPosition));
                     result += number;
                 }
             }
@@ -307,7 +307,7 @@ namespace AdventOfCode2023
             string[] lines = File.ReadAllLines(input);
 
             int result = 0;
-            
+
             for (int index = 0; index < lines.Length; index++)
             {
                 string line = lines[index];
@@ -321,7 +321,7 @@ namespace AdventOfCode2023
                         List<int> numbers = new List<int>();
 
                         //line above
-                        if (HasNumber(lines, index-1, position-1) || HasNumber(lines, index-1, position) || HasNumber(lines, index-1, position+1))
+                        if (HasNumber(lines, index - 1, position - 1) || HasNumber(lines, index - 1, position) || HasNumber(lines, index - 1, position + 1))
                         {
                             if (HasNumber(lines, index - 1, position - 1))
                             {
@@ -338,7 +338,7 @@ namespace AdventOfCode2023
                         }
 
                         //currentline
-                        if (HasNumber(lines, index, position - 1) || HasNumber(lines, index, position+1))
+                        if (HasNumber(lines, index, position - 1) || HasNumber(lines, index, position + 1))
                         {
                             if (HasNumber(lines, index, position - 1))
                             {
@@ -403,22 +403,57 @@ namespace AdventOfCode2023
             int left = position;
             int right = position;
 
-            while (left > 0 && char.IsDigit(line[left-1]))
+            while (left > 0 && char.IsDigit(line[left - 1]))
             {
                 left--;
             }
 
-            while (right < line.Length-1 && char.IsDigit(line[right+1]))
+            while (right < line.Length - 1 && char.IsDigit(line[right + 1]))
             {
                 right++;
             }
 
-            int result = int.Parse(line[left..(right+1)]);
+            int result = int.Parse(line[left..(right + 1)]);
 
             _log.WriteLine($" {result} ");
             return result;
         }
 
 
+        [Theory]
+        [InlineData("./input/day4test.txt", 13)]
+        [InlineData("./input/day4.txt", 22897)]
+        public void Day4Part1(string input, int expected)
+        {
+            string[] lines = File.ReadAllLines(input);
+
+            int result = 0;
+
+            for (int index = 0; index < lines.Length; index++)
+            {
+                string line = lines[index].Replace("  ", " ");
+                int startIndex = line.IndexOf(':');
+                int middleIndex = line.IndexOf('|');
+
+                var lottoNumbers = line[(startIndex+1)..middleIndex].Split(" ").Where(n => n.Length > 0).Select(n => int.Parse(n)).ToList();
+                var numbers = line[(middleIndex+1)..].Split(" ").Where(n => n.Length > 0).Select(n => int.Parse(n)).ToList();
+
+                int count = 0;
+                foreach(var number in numbers)
+                {
+                    if (lottoNumbers.Contains(number))
+                    {
+                        count++;
+                    }
+                }
+
+                if (count > 0)
+                {
+                    result += 1 << count-1;
+                }
+            }
+
+            Assert.Equal(expected, result);
+        }
     }
 }
