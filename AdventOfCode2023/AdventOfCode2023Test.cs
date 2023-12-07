@@ -435,11 +435,11 @@ namespace AdventOfCode2023
                 int startIndex = line.IndexOf(':');
                 int middleIndex = line.IndexOf('|');
 
-                var lottoNumbers = line[(startIndex+1)..middleIndex].Split(" ").Where(n => n.Length > 0).Select(n => int.Parse(n)).ToList();
-                var numbers = line[(middleIndex+1)..].Split(" ").Where(n => n.Length > 0).Select(n => int.Parse(n)).ToList();
+                var lottoNumbers = line[(startIndex + 1)..middleIndex].Split(" ").Where(n => n.Length > 0).Select(n => int.Parse(n)).ToList();
+                var numbers = line[(middleIndex + 1)..].Split(" ").Where(n => n.Length > 0).Select(n => int.Parse(n)).ToList();
 
                 int count = 0;
-                foreach(var number in numbers)
+                foreach (var number in numbers)
                 {
                     if (lottoNumbers.Contains(number))
                     {
@@ -449,7 +449,7 @@ namespace AdventOfCode2023
 
                 if (count > 0)
                 {
-                    result += 1 << count-1;
+                    result += 1 << count - 1;
                 }
             }
 
@@ -463,7 +463,7 @@ namespace AdventOfCode2023
         {
             string[] lines = File.ReadAllLines(input);
             int[] copies = new int[lines.Length];
-            
+
             //populate original cards
             for (int i = 0; i < copies.Length; i++)
             {
@@ -490,7 +490,7 @@ namespace AdventOfCode2023
                     }
                 }
 
-                for (int i = index+1; i < copies.Length && i < index+count+1 ; i++)
+                for (int i = index + 1; i < copies.Length && i < index + count + 1; i++)
                 {
                     copies[i] += copies[index];
                 }
@@ -531,7 +531,7 @@ namespace AdventOfCode2023
 
                 foreach (var arr in destSrcRges)
                 {
-                    foreach(DestSrcRge destsrc in arr)
+                    foreach (DestSrcRge destsrc in arr)
                     {
                         if (destsrc.InRange(current, out current))
                         {
@@ -544,7 +544,7 @@ namespace AdventOfCode2023
                 _log.WriteLine($"{seed}:{current}");
             }
 
-            _log.WriteLine(String.Join(",",seedline));
+            _log.WriteLine(String.Join(",", seedline));
 
             long result = results.Min();
 
@@ -566,7 +566,7 @@ namespace AdventOfCode2023
 
             public bool InRange(long number, out long output)
             {
-                if (number >= source && number < source+range)
+                if (number >= source && number < source + range)
                 {
                     output = dest + (number - source);
                     return true;
@@ -670,11 +670,11 @@ namespace AdventOfCode2023
             string[] lines = File.ReadAllLines(input);
 
             //read durations
-            int[] durations = lines[0][(lines[0].IndexOf(':')+1)..].Split(" ", StringSplitOptions.RemoveEmptyEntries).Select(n => int.Parse(n)).ToArray();
-            int[] distance = lines[1][(lines[1].IndexOf(':')+1)..].Split(" ", StringSplitOptions.RemoveEmptyEntries).Select(n => int.Parse(n)).ToArray();
+            int[] durations = lines[0][(lines[0].IndexOf(':') + 1)..].Split(" ", StringSplitOptions.RemoveEmptyEntries).Select(n => int.Parse(n)).ToArray();
+            int[] distance = lines[1][(lines[1].IndexOf(':') + 1)..].Split(" ", StringSplitOptions.RemoveEmptyEntries).Select(n => int.Parse(n)).ToArray();
             List<int> beats = new List<int>();
 
-            for (int dur = 0; dur < durations.Length; dur++) 
+            for (int dur = 0; dur < durations.Length; dur++)
             {
                 int duration = durations[dur];
                 int beat = 0;
@@ -692,7 +692,7 @@ namespace AdventOfCode2023
             }
 
             int result = 1;
-            foreach(int b in beats)
+            foreach (int b in beats)
             {
                 result *= b;
             }
@@ -734,6 +734,263 @@ namespace AdventOfCode2023
 
             Assert.Equal(expected, result);
         }
+
+        public struct Hand
+        {
+            readonly char[] Cards = new char[] { '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A' };
+
+            public Hand(string line)
+            {
+                //first 5 are hand
+                this.hand = new int[5];
+                this.hand[0] = Array.IndexOf(Cards, line[0]);
+                this.hand[1] = Array.IndexOf(Cards, line[1]);
+                this.hand[2] = Array.IndexOf(Cards, line[2]);
+                this.hand[3] = Array.IndexOf(Cards, line[3]);
+                this.hand[4] = Array.IndexOf(Cards, line[4]);
+
+                this.bid = int.Parse(line[6..]);
+            }
+
+            public int[] hand;
+            public int bid;
+
+            public int GethandStrength()
+            {
+                Hand self = this;
+                //5 of a kind
+                if (hand.All(a => a == self.hand[0]))
+                {
+                    return 6;
+                }
+
+                var counts = new List<int>();
+                foreach(var dist in hand.Distinct() )
+                {
+                    counts.Add(hand.Count(a => a == dist));
+                }
+
+                //4 of a kind
+                if (counts.Contains(4))
+                {
+                    return 5;
+                }
+
+                //full house
+                if (counts.Contains(3) && counts.Contains(2))
+                {
+                    return 4;
+                }
+
+                //three of a kind
+                if (counts.Contains(3))
+                {
+                    return 3;
+                }
+
+                //two pair
+                if (counts.Where(a => a == 2).Count() == 2)
+                {
+                    return 2;
+                }
+
+                if (counts.Contains(2))
+                {
+                    return 1;
+                }
+
+                return 0;
+            }
+
+            public int GetHandStrengthWithJoker()
+            {
+                var NewHand = hand.Where(a => a != 9);
+                
+                Hand self = this;
+
+                var counts = new List<int>();
+                foreach (var dist in NewHand.Distinct())
+                {
+                    counts.Add(hand.Count(a => a == dist));
+                }
+                counts = counts.OrderByDescending(a => a).ToList();
+
+                //5 Jokers
+                if (!counts.Any())
+                    return 6;
+
+                counts[0] += 5 - NewHand.Count();
+
+                //5 of a kind
+                if (counts.Contains(5))
+                {
+                    return 6;
+                }
+
+                //4 of a kind
+                if (counts.Contains(4))
+                {
+                    return 5;
+                }
+
+                //full house
+                if (counts.Contains(3) && counts.Contains(2))
+                {
+                    return 4;
+                }
+
+                //three of a kind
+                if (counts.Contains(3))
+                {
+                    return 3;
+                }
+
+                //two pair
+                if (counts.Where(a => a == 2).Count() == 2)
+                {
+                    return 2;
+                }
+
+                if (counts.Contains(2))
+                {
+                    return 1;
+                }
+
+                return 0;
+            }
+
+
+            public int CompareTo(Hand b)
+            {
+                if (this.GethandStrength() > b.GethandStrength())
+                {
+                    return 1;
+                }
+
+                if (this.GethandStrength() < b.GethandStrength())
+                {
+                    return -1;
+                }
+
+                for (int i = 0; i < this.hand.Length; i++)
+                {                    
+                    if (this.hand[i] > b.hand[i])
+                    {
+                        return 1;
+                    }
+
+                    if (this.hand[i] < b.hand[i])
+                    {
+                        return -1;
+                    }
+                }
+
+                return 0;
+            }
+
+            public int CompareTo2(Hand b)
+            {
+                if (this.GetHandStrengthWithJoker() > b.GetHandStrengthWithJoker())
+                {
+                    return 1;
+                }
+
+                if (this.GetHandStrengthWithJoker() < b.GetHandStrengthWithJoker())
+                {
+                    return -1;
+                }
+
+                for (int i = 0; i < this.hand.Length; i++)
+                {
+                    //joker is weakest individual card now
+                    if (!(b.hand[i] == 9 && this.hand[i] == 9))
+                    {
+                        if (b.hand[i] == 9)
+                        {
+                            return 1;
+                        }
+
+                        if (this.hand[i] == 9)
+                        {
+                            return -1;
+                        }
+                    }
+
+                    if (this.hand[i] > b.hand[i])
+                    {
+                        return 1;
+                    }
+
+                    if (this.hand[i] < b.hand[i])
+                    {
+                        return -1;
+                    }
+                }
+
+                return 0;
+            }
+
+        }
+
+        [Theory]
+        [InlineData("./input/day7test.txt", 6440)]
+        [InlineData("./input/day7.txt", 250370104)]
+        public void Day7Part1(string input, int expected)
+        {
+            string[] lines = File.ReadAllLines(input);
+
+            //hands
+            var hands = new List<Hand>();
+            foreach(var line in lines)
+            {
+                hands.Add(new Hand(line));
+            }
+
+            //points
+            hands.Sort((a, b) => a.CompareTo(b));
+
+            Hand[] handsArray = hands.ToArray();
+            
+            var result = 0;
+
+            for(int i = 0; i < handsArray.Length; i++)
+            {
+                result += handsArray[i].bid * (i+1);
+            }
+
+            Assert.Equal(expected, result);
+        }
+
+
+        [Theory]
+        [InlineData("./input/day7test.txt", 5905)]
+        [InlineData("./input/day7.txt", 251735672)]
+        public void Day7Part2(string input, int expected)
+        {
+            string[] lines = File.ReadAllLines(input);
+
+            //hands
+            var hands = new List<Hand>();
+            foreach (var line in lines)
+            {
+                hands.Add(new Hand(line));
+            }
+
+            //points
+            hands.Sort((a, b) => a.CompareTo2(b));
+
+            Hand[] handsArray = hands.ToArray();
+
+            var result = 0;
+
+            for (int i = 0; i < handsArray.Length; i++)
+            {
+                result += handsArray[i].bid * (i + 1);
+            }
+
+            Assert.Equal(expected, result);
+        }
+
 
     }
 }
