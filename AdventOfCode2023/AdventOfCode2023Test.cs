@@ -662,5 +662,45 @@ namespace AdventOfCode2023
             yield break;
         }
 
+
+        [Theory]
+        [InlineData("./input/day6test.txt", 288)]
+        [InlineData("./input/day6.txt", 1660968)]
+        public void Day6Part1(string input, int expected)
+        {
+            string[] lines = File.ReadAllLines(input);
+
+            //read durations
+            int[] durations = lines[0][(lines[0].IndexOf(':')+1)..].Split(" ", StringSplitOptions.RemoveEmptyEntries).Select(n => int.Parse(n)).ToArray();
+            int[] distance = lines[1][(lines[1].IndexOf(':')+1)..].Split(" ", StringSplitOptions.RemoveEmptyEntries).Select(n => int.Parse(n)).ToArray();
+            List<int> beats = new List<int>();
+
+
+            for (int dur = 0; dur < durations.Length; dur++) 
+            {
+                int duration = durations[dur];
+                int beat = 0;
+                for (int i = 0; i <= duration; i++)
+                {
+                    int dist = i * (duration - i);
+
+                    if (dist > distance[dur])
+                    {
+                        beat++;
+                    }
+                }
+
+                beats.Add(beat);
+            }
+
+            int result = 1;
+            foreach(int b in beats)
+            {
+                result *= b;
+            }
+
+            Assert.Equal(expected, result);
+        }
+
     }
 }
