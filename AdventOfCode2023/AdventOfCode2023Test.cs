@@ -662,7 +662,6 @@ namespace AdventOfCode2023
             yield break;
         }
 
-
         [Theory]
         [InlineData("./input/day6test.txt", 288)]
         [InlineData("./input/day6.txt", 1660968)]
@@ -674,7 +673,6 @@ namespace AdventOfCode2023
             int[] durations = lines[0][(lines[0].IndexOf(':')+1)..].Split(" ", StringSplitOptions.RemoveEmptyEntries).Select(n => int.Parse(n)).ToArray();
             int[] distance = lines[1][(lines[1].IndexOf(':')+1)..].Split(" ", StringSplitOptions.RemoveEmptyEntries).Select(n => int.Parse(n)).ToArray();
             List<int> beats = new List<int>();
-
 
             for (int dur = 0; dur < durations.Length; dur++) 
             {
@@ -695,6 +693,41 @@ namespace AdventOfCode2023
 
             int result = 1;
             foreach(int b in beats)
+            {
+                result *= b;
+            }
+
+            Assert.Equal(expected, result);
+        }
+
+        [Theory]
+        [InlineData("./input/day6test.txt", 71503)]
+        [InlineData("./input/day6.txt", 26499773)]
+        public void Day6Part2(string input, int expected)
+        {
+            string[] lines = File.ReadAllLines(input);
+
+            //read durations
+            long durations = long.Parse(lines[0][(lines[0].IndexOf(':') + 1)..].Replace(" ", ""));
+            long distance = long.Parse(lines[1][(lines[1].IndexOf(':') + 1)..].Replace(" ", ""));
+            List<long> beats = new List<long>();
+
+            long duration = durations;
+            int beat = 0;
+            for (long i = 0; i <= duration; i++)
+            {
+                long dist = i * (duration - i);
+
+                if (dist > distance)
+                {
+                    beat++;
+                }
+            }
+
+            beats.Add(beat);
+
+            long result = 1;
+            foreach (long b in beats)
             {
                 result *= b;
             }
